@@ -55,16 +55,9 @@ const BulkTicketUploadModal = ({ token, isOpen, onCancel, onComplete }) => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.post('http://localhost:8021/api/tickets/bulk-create', { tickets }, config);
         
-        if (response.data.failedCount > 0) {
-          toast.error("Bulk Upload with Failures", {
-            description: `${response.data.createdCount} tickets created, ${response.data.failedCount} failed. See console for details.`, // Or display failures more prominently
-          });
-          console.error("Bulk Upload Failures:", response.data.failures);
-        } else {
-          toast.success("Bulk Upload Complete", {
-            description: response.data.message,
-          });
-        }
+        toast.success("Bulk Upload Complete", {
+          description: response.data.message,
+        });
         onComplete(); // Close modal and refresh data
 
       } catch (err) {
@@ -84,7 +77,7 @@ const BulkTicketUploadModal = ({ token, isOpen, onCancel, onComplete }) => {
         <DialogHeader>
           <DialogTitle>Bulk Ticket Upload</DialogTitle>
           <DialogDescription>
-            Upload an .xlsx file with columns: "Company Name", "Site Address", "Work Description", "Amount", "Expertise Required".
+            Upload an .xlsx file with columns: "Company Name", "Site Address", "Work Description", "Amount", "Expertise Required", "Latitude", "Longitude".
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
