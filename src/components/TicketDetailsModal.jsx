@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import PaymentForm from './PaymentForm';
+
+const stripePromise = loadStripe(import.meta.env.VITE_REACT_APP_STRIPE_PUBLISHABLE_KEY);
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,8 +33,16 @@ const DetailItem = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManualAssignRequest }) => {
+const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManualAssignRequest, userRole, token }) => {
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+
   if (!ticket) return null;
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentForm(false);
+    setOpen(false); // Close the modal after successful payment
+    // You might want to trigger a refresh of the ticket list here
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -48,6 +61,7 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
               <DetailItem icon={DollarSign} label="Amount" value={`₹${ticket.amount}`} />
+            <DetailItem label="Payment Status" value={ticket.paymentStatus} />
               <DetailItem icon={Wrench} label="Expertise" value={ticket.expertiseRequired.join(', ')} />
               {ticket.assignedEngineer && (
                 <DetailItem 
@@ -64,7 +78,9 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
                   {ticket.accessRequests.map(engineerWhoRequested => (
                     <div key={engineerWhoRequested._id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md border border-border">
                       <p className="text-sm font-medium text-foreground">{engineerWhoRequested.fullName} ({engineerWhoRequested.employeeId})</p>
-                      <Button size="sm" onClick={() => onAssignFromRequest(ticket._id, engineerWhoRequested._id)}>Assign</Button>
+                      {(userRole === 'Admin' || userRole === 'NetCovet Manager') && (
+                        <Button size="sm" onClick={() => onAssignFromRequest(ticket._id, engineerWhoRequested._id)}>Assign</Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -82,13 +98,29 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
         </ScrollArea>
         <DialogFooter className="pt-4 border-t border-border">
           <div className="flex w-full justify-end gap-3">
-            {ticket.status === 'Open' && !ticket.assignedEngineer && ticket.accessRequests?.length === 0 && (
+            {ticket.status === 'Open' && !ticket.assignedEngineer && ticket.accessRequests?.length === 0 && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
               <Button onClick={() => { setOpen(false); onManualAssignRequest(); }}>Assign Manually</Button>
+            )}
+            {ticket.status === 'Closed' && ticket.paymentStatus === 'Pending' && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
+              <Button onClick={() => setShowPaymentForm(true)}>Process Payment</Button>
             )}
             <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
           </div>
         </DialogFooter>
       </DialogContent>
+      {showPaymentForm && (
+        <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Process Payment</DialogTitle>
+              <DialogDescription>Enter payment details for Ticket ID: {ticket.ticketId}</DialogDescription>
+            </DialogHeader>
+            <Elements stripe={stripePromise}>
+              <PaymentForm ticketId={ticket._id} amount={ticket.amount} token={token} onPaymentSuccess={handlePaymentSuccess} onCancel={() => setShowPaymentForm(false)} />
+            </Elements>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 };

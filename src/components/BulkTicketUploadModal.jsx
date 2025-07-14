@@ -22,7 +22,7 @@ const API_URL = 'http://localhost:8021/api'; // Assuming this is defined or avai
 
 
 
-const BulkTicketUploadModal = ({ token, isOpen, onCancel, onComplete }) => {
+const BulkTicketUploadModal = ({ token, isOpen, onCancel, onComplete, userRole, companyId }) => {
 
   const [file, setFile] = useState(null);
 
@@ -148,27 +148,23 @@ const BulkTicketUploadModal = ({ token, isOpen, onCancel, onComplete }) => {
 
         // Map to the expected backend format
 
-        const tickets = json.map(row => ({
-
-          companyName: row['Company Name'], // Ensure headers match exactly from Excel
-
-          siteAddress: row['Site Address'],
-
-          workDescription: row['Work Description'],
-
-          amount: parseFloat(row['Amount']),
-
-          expertiseRequired: row['Expertise Required'] ? String(row['Expertise Required']).split(',').map(s => s.trim()).filter(Boolean) : [],
-
-          coordinates: {
-
-            latitude: parseFloat(row['Latitude']),
-
-            longitude: parseFloat(row['Longitude']),
-
-          },
-
-        }));
+        const tickets = json.map(row => {
+          const baseTicket = {
+            companyName: row['Company Name'], // Ensure headers match exactly from Excel
+            siteAddress: row['Site Address'],
+            workDescription: row['Work Description'],
+            amount: parseFloat(row['Amount']),
+            expertiseRequired: row['Expertise Required'] ? String(row['Expertise Required']).split(',').map(s => s.trim()).filter(Boolean) : [],
+            coordinates: {
+              latitude: parseFloat(row['Latitude']),
+              longitude: parseFloat(row['Longitude']),
+            },
+          };
+          if (userRole === 'Company Admin' && companyId) {
+            baseTicket.companyId = companyId;
+          }
+          return baseTicket;
+        });
 
 
 

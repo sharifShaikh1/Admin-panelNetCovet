@@ -9,7 +9,10 @@ import BulkTicketUploadModal from './BulkTicketUploadModal';
 
 const API_URL = 'http://localhost:8021/api';
 
-const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange, handleApiError }) => {
+const TICKET_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const ticketCache = {};
+
+const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange, handleApiError, userRole, companyId }) => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -18,15 +21,30 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
     const fetchTickets = useCallback(async () => {
         if (!status) return;
         setLoading(true);
+
+        const cacheKey = `${status}-${userRole}-${companyId}`;
+        const cachedData = ticketCache[cacheKey];
+
+        if (cachedData && (Date.now() - cachedData.timestamp < TICKET_CACHE_DURATION)) {
+            setTickets(cachedData.data);
+            setLoading(false);
+            return;
+        }
+
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const apiStatus = status.replace('-', ' '); 
-        const { data } = await axios.get(`${API_URL}/tickets/${apiStatus}`, config);
+            let url = `${API_URL}/tickets/${apiStatus}`;
+            if (userRole === 'Company Admin' && companyId) {
+                url += `?companyId=${companyId}`;
+            }
+            const { data } = await axios.get(url, config);
 
+            ticketCache[cacheKey] = { data, timestamp: Date.now() };
             setTickets(data);
         } catch (err) { handleApiError(err); }
         finally { setLoading(false); }
-    }, [token, status, handleApiError]);
+    }, [token, status, handleApiError, userRole, companyId]);
 
     useEffect(() => {
         fetchTickets();
@@ -43,8 +61,12 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
         <div className="flex justify-between items-center mb-6 flex-shrink-0">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">Ticket Management</h2>
             <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setShowBulkUpload(true)}>Bulk Upload</Button>
-                <Button onClick={onCreateTicket}>Create Single Ticket</Button>
+                {(userRole === 'Admin' || userRole === 'Company Admin') && (
+                    <Button variant="outline" onClick={() => setShowBulkUpload(true)}>Bulk Upload</Button>
+                )}
+                {(userRole === 'Admin' || userRole === 'Company Admin') && (
+                    <Button onClick={onCreateTicket}>Create Single Ticket</Button>
+                )}
             </div>
         </div>
         

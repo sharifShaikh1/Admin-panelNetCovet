@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
-const TicketCreationForm = ({ onSubmit, onCancel }) => {
+const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
   const [formData, setFormData] = useState({
     companyName: "",
     siteAddress: "",
@@ -68,6 +68,10 @@ const TicketCreationForm = ({ onSubmit, onCancel }) => {
       amount: parseFloat(amount),
       coordinates,
     };
+
+    if (userRole === 'Company Admin' && companyId) {
+      ticket.companyId = companyId;
+    }
 
     onSubmit(ticket);
     setIsSubmitting(false);

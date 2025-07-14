@@ -7,6 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const API_URL = 'http://localhost:8021/api';
 
+const USER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const userCache = {};
+
 const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,9 +20,20 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
     if (!['pending', 'approved'].includes(status)) return;
     
     setLoading(true);
+
+    const cacheKey = status;
+    const cachedData = userCache[cacheKey];
+
+    if (cachedData && (Date.now() - cachedData.timestamp < USER_CACHE_DURATION)) {
+      setUsers(cachedData.data);
+      setLoading(false);
+      return;
+    }
+
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.get(`${API_URL}/admin/engineers/${status}`, config);
+      userCache[cacheKey] = { data, timestamp: Date.now() };
       setUsers(data);
     } catch (err) { 
       handleApiError(err); 

@@ -22,13 +22,20 @@ const Login = ({ onLogin }) => {
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
-        role: 'Admin',
       });
-      if (response.data.user.role !== 'Admin') {
-        throw new Error('Access Denied. Only administrators can log in here.');
+      const { token, user } = response.data;
+      if (!token || !user || !user.role) {
+        throw new Error('Login response missing token or user role.');
+      }
+      // Check if the role is one of the allowed admin panel roles
+      const allowedRoles = ['Admin', 'Company Admin', 'NetCovet Manager'];
+      if (!allowedRoles.includes(user.role)) {
+        throw new Error('Access Denied. Your role does not have access to this panel.');
       }
       toast.success("Login successful!");
-      onLogin(response.data.token);
+      localStorage.setItem('user-id', user.id);
+      localStorage.setItem('user-full-name', user.fullName);
+      onLogin(token, user.role, user.companyId); // Pass token, role, and companyId
       navigate('/admin');
     } catch (err) {
       toast.error("Login Failed", {

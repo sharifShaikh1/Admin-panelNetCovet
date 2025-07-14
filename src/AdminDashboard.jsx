@@ -9,18 +9,25 @@ import ConfirmModal from './components/ConfirmModal';
 import TicketCreationForm from './components/TicketCreationForm';
 import TicketDetailsModal from './components/TicketDetailsModal';
 import AssignEngineerModal from './components/AssignEngineerModal';
-import { LogOut, Users, Ticket as TicketIcon } from 'lucide-react';
+import { LogOut, Users, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
+import ChatWindow from './components/ChatWindow';
 import { ModeToggle } from './components/mode-toggle';
-import { Button } from "@/components/ui/button"; // ✅ THIS IS THE MISSING IMPORT
+import { Button } from "@/components/ui/button";
+import UserCreationForm from './components/UserCreationForm';
 
 const API_URL = 'http://localhost:8021/api';
 
-const AdminDashboard = ({ token, onLogout }) => {
+const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
+  const isAdmin = userRole === 'Admin';
+  const isCompanyAdmin = userRole === 'Company Admin';
+  const isNetCovetManager = userRole === 'NetCovet Manager';
   const [viewingUser, setViewingUser] = useState(null);
   const [viewingTicket, setViewingTicket] = useState(null);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
   const [ticketIdToAssign, setTicketIdToAssign] = useState(null);
   const [confirmState, setConfirmState] = useState({ isOpen: false });
+  const [showUserCreationForm, setShowUserCreationForm] = useState(false); // New state for user creation form
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // New state for sidebar collapse
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -84,41 +91,70 @@ const AdminDashboard = ({ token, onLogout }) => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <nav className="w-64 bg-card text-foreground flex flex-col flex-shrink-0 border-r">
+      <nav className={`bg-card text-foreground flex flex-col flex-shrink-0 border-r ${isSidebarCollapsed ? 'w-20' : 'w-64'} transition-all duration-300`}>
         <div className="p-6 border-b flex justify-between items-center">
-          <h1 className="text-2xl font-bold">FieldSync</h1>
-          <ModeToggle />
+          <div className="flex items-center gap-2">
+            {!isSidebarCollapsed && <h1 className="text-2xl font-bold">FieldSync</h1>}
+            <ModeToggle />
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
+            <Menu className="h-5 w-5" />
+          </Button>
         </div>
         <ul className="flex-grow px-4 py-4">
+          {(isAdmin || isNetCovetManager) && (
+            <li className="mb-2">
+              <NavLink to="/admin/engineers/pending" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/engineers') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+                  <Users className="h-5 w-5" /> {!isSidebarCollapsed && "User Management"}
+              </NavLink>
+            </li>
+          )}
+          {isAdmin && (
+            <li className="mb-2">
+              <NavLink to="/admin/create-user" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/create-user') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+                  <Users className="h-5 w-5" /> {!isSidebarCollapsed && "Create User"}
+              </NavLink>
+            </li>
+          )}
+          {(isAdmin || isCompanyAdmin || isNetCovetManager) && (
+            <li>
+              <NavLink to="/admin/tickets/Open" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+                  <TicketIcon className="h-5 w-5" /> {!isSidebarCollapsed && "Ticket Management"}
+              </NavLink>
+            </li>
+          )}
           <li className="mb-2">
-            <NavLink to="/admin/engineers/pending" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/engineers') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
-                <Users className="h-5 w-5" /> User Management
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/admin/tickets/Open" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
-                <TicketIcon className="h-5 w-5" /> Ticket Management
+            <NavLink to="/admin/chat" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/chat') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+                <MessageSquare className="h-5 w-5" /> {!isSidebarCollapsed && "Chat"}
             </NavLink>
           </li>
         </ul>
         <div className="p-4 border-t">
             <Button variant="destructive" className="w-full justify-start gap-3" onClick={onLogout}>
-                <LogOut className="h-5 w-5"/> Logout
+                <LogOut className="h-5 w-5"/> {!isSidebarCollapsed && "Logout"}
             </Button>
         </div>
       </nav>
       
       <main className="flex-1 flex flex-col p-8 overflow-y-hidden">
         <Routes>
-          <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />
-          <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} />} />
-          <Route path="*" element={<Navigate to="/admin/engineers/pending" replace />} />
+          {isAdmin && (
+            <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />
+          )}
+          {(isAdmin || isCompanyAdmin || isNetCovetManager) && (
+            <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} userRole={userRole} companyId={companyId} />} />
+          )}
+          <Route path="*" element={<Navigate to={isAdmin ? "/admin/engineers/pending" : "/admin/tickets/Open"} replace />} />
+          <Route path="chat" element={<ChatWindow token={token} userRole={userRole} userId={localStorage.getItem('user-id')} userName={localStorage.getItem('user-full-name')} ticket={viewingTicket} />} />
+          {isAdmin && (
+            <Route path="create-user" element={<UserCreationForm token={token} isOpen={true} onCancel={() => navigate(-1)} onUserCreated={() => navigate('/admin/engineers/pending')} />} />
+          )}
         </Routes>
       </main>
       
       {viewingUser && <DetailsModal user={viewingUser} open={!!viewingUser} setOpen={() => setViewingUser(null)} />}
-      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onDirectAssign={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} />}
-      {showCreateTicket && <TicketCreationForm onSubmit={handleCreateTicket} onCancel={() => setShowCreateTicket(false)} />}
+      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onDirectAssign={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} />}
+      {showCreateTicket && <TicketCreationForm onSubmit={handleCreateTicket} onCancel={() => setShowCreateTicket(false)} userRole={userRole} companyId={companyId} />}
       {ticketIdToAssign && <AssignEngineerModal ticketId={ticketIdToAssign} onAssign={handleAssignEngineer} onCancel={() => setTicketIdToAssign(null)} />}
       <ConfirmModal isOpen={confirmState.isOpen} title={confirmState.title} message={confirmState.message} onConfirm={confirmState.onConfirm} onCancel={() => setConfirmState({ isOpen: false })} />
     </div>
