@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import axios from 'axios';
+import { apiRequest } from '../lib/utils';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
-
-const API_URL = 'http://localhost:8021/api';
 
 const PaymentForm = ({ ticketId, amount, token, onPaymentSuccess, onCancel }) => {
   const stripe = useStripe();
@@ -16,39 +14,37 @@ const PaymentForm = ({ ticketId, amount, token, onPaymentSuccess, onCancel }) =>
     setLoading(true);
 
     if (!stripe || !elements) {
-      // Stripe.js has not yet loaded. Make sure to disable form submission until Stripe.js has loaded.
       setLoading(false);
       return;
     }
 
     try {
-      // 1. Create Payment Intent on your backend
-      const { data: { clientSecret } } = await axios.post(
-        `${API_URL}/payment/create-payment-intent`,
-        { amount, currency: 'inr' }, // Assuming INR for UPI
-        { headers: { Authorization: `Bearer ${token}` } }
+      const { clientSecret } = await apiRequest(
+        'post',
+        '/payment/create-payment-intent',
+        { amount, currency: 'inr' },
+        token
       );
 
-      // 2. Confirm UPI payment
       const { paymentIntent, error } = await stripe.confirmUpiPayment(
         clientSecret,
         { 
           payment_method: { 
             type: 'upi',
-            upi: elements.getElement(CardElement), // CardElement is used for UPI details input
+            upi: elements.getElement(CardElement),
           },
-          return_url: window.location.origin + '/payment-success', // Replace with your actual success URL
+          return_url: window.location.origin + '/payment-success',
         }
       );
 
       if (error) {
         toast.error("Payment Failed", { description: error.message });
       } else if (paymentIntent.status === 'succeeded') {
-        // 3. Update ticket status on your backend
-        await axios.put(
-          `${API_URL}/tickets/${ticketId}/payment-status`,
+        await apiRequest(
+          'put',
+          `/tickets/${ticketId}/payment-status`,
           { paymentIntentId: paymentIntent.id, paymentStatus: 'Paid' },
-          { headers: { Authorization: `Bearer ${token}` } }
+          token
         );
         toast.success("Payment Successful!");
         onPaymentSuccess();
@@ -56,7 +52,7 @@ const PaymentForm = ({ ticketId, amount, token, onPaymentSuccess, onCancel }) =>
         toast.info("Payment Status", { description: `Payment status: ${paymentIntent.status}` });
       }
     } catch (err) {
-      toast.error("Payment Error", { description: err.response?.data?.message || err.message });
+      toast.error("Payment Error", { description: err.message });
     } finally {
       setLoading(false);
     }

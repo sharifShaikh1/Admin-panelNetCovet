@@ -63,11 +63,11 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
               <DetailItem icon={DollarSign} label="Amount" value={`₹${ticket.amount}`} />
             <DetailItem label="Payment Status" value={ticket.paymentStatus} />
               <DetailItem icon={Wrench} label="Expertise" value={ticket.expertiseRequired.join(', ')} />
-              {ticket.assignedEngineer && (
+              {ticket.assignedPersonnel && ticket.assignedPersonnel.length > 0 && (
                 <DetailItem 
                   icon={User} 
                   label="Assigned To" 
-                  value={`${ticket.assignedEngineer.name} (${ticket.assignedEngineer.assignmentStatus})`} 
+                  value={`${ticket.assignedPersonnel[0].name} (${ticket.assignedPersonnel[0].assignmentStatus})`} 
                 />
               )}
             </div>
@@ -75,11 +75,11 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
             {ticket.accessRequests?.length > 0 && (
               <DetailSection title="Access Requests">
                 <div className="space-y-3 mt-2">
-                  {ticket.accessRequests.map(engineerWhoRequested => (
-                    <div key={engineerWhoRequested._id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md border border-border">
-                      <p className="text-sm font-medium text-foreground">{engineerWhoRequested.fullName} ({engineerWhoRequested.employeeId})</p>
+                  {ticket.accessRequests.map(request => (
+                    <div key={request.userId._id} className="flex justify-between items-center p-3 bg-muted/50 rounded-md border border-border">
+                      <p className="text-sm font-medium text-foreground">{request.userId.fullName} ({request.userId.employeeId})</p>
                       {(userRole === 'Admin' || userRole === 'NetCovet Manager') && (
-                        <Button size="sm" onClick={() => onAssignFromRequest(ticket._id, engineerWhoRequested._id)}>Assign</Button>
+                        <Button size="sm" onClick={() => onAssignFromRequest(ticket._id, request.userId._id)}>Assign</Button>
                       )}
                     </div>
                   ))}

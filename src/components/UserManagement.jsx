@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, NavLink } from 'react-router-dom';
-import axios from 'axios';
+import { apiRequest } from '../lib/utils';
 import UserTable from './UserTable';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const API_URL = 'http://localhost:8021/api';
 
 const USER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const userCache = {};
@@ -31,8 +29,7 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
     }
 
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const { data } = await axios.get(`${API_URL}/admin/engineers/${status}`, config);
+      const data = await apiRequest('get', `/admin/engineers/${status}`, null, token);
       userCache[cacheKey] = { data, timestamp: Date.now() };
       setUsers(data);
     } catch (err) { 

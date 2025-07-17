@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { apiRequest } from '../lib/utils';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,8 +13,6 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const API_URL = 'http://localhost:8021/api';
-
 const AssignEngineerModal = ({ ticketId, onAssign, onCancel }) => {
   const [engineers, setEngineers] = useState([]);
   const [selectedEngineer, setSelectedEngineer] = useState('');
@@ -25,12 +23,11 @@ const AssignEngineerModal = ({ ticketId, onAssign, onCancel }) => {
       setLoading(true);
       try {
         const token = localStorage.getItem('admin-token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const { data } = await axios.get(`${API_URL}/admin/engineers/approved`, config);
+        const data = await apiRequest('get', '/admin/engineers/approved', null, token);
         setEngineers(data);
       } catch (err) {
         toast.error("Failed to fetch engineers", {
-          description: err.response?.data?.message || "An error occurred while loading available engineers.",
+          description: err.message || "An error occurred while loading available engineers.",
         });
       } finally {
         setLoading(false);

@@ -5,9 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8021/api';
+import { apiRequest } from '../lib/utils';
 
 const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
   const [formData, setFormData] = useState({
@@ -23,11 +21,10 @@ const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const { data } = await axios.get(`${API_URL}/admin/companies`, config); // Assuming an endpoint to get companies
+        const data = await apiRequest('get', '/admin/companies', null, token);
         setCompanies(data);
       } catch (err) {
-        toast.error("Failed to fetch companies", { description: err.response?.data?.message || err.message });
+        toast.error("Failed to fetch companies", { description: err.message });
       }
     };
     if (isOpen) {
@@ -51,13 +48,12 @@ const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`${API_URL}/admin/users`, formData, config);
+      await apiRequest('post', '/admin/users', formData, token);
       toast.success("User created successfully!");
       onUserCreated();
       onCancel();
     } catch (err) {
-      toast.error("User creation failed", { description: err.response?.data?.message || err.message });
+      toast.error("User creation failed", { description: err.message });
     } finally {
       setLoading(false);
     }

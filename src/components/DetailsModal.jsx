@@ -55,6 +55,23 @@ const DetailsModal = ({ user, open, setOpen }) => {
             <DocumentLink label="Government ID" url={user.documents?.governmentId} />
             <DocumentLink label="Address Proof" url={user.documents?.addressProof} />
           </div>
+          
+          {user.certificates && user.certificates.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-border">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Certificates</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 p-2">
+                {user.certificates.map((cert, index) => (
+                  <div key={index}>
+                    <p className="text-sm font-medium text-muted-foreground">{cert.name}</p>
+                    <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                      <Link className="h-4 w-4" /> View Certificate
+                    </a>
+                    {cert.issuedAt && <p className="text-xs text-muted-foreground mt-1">Issued: {new Date(cert.issuedAt).toLocaleDateString()}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </ScrollArea>
         <DialogFooter className="pt-4 border-t border-border">
           <Button variant="secondary" onClick={() => setOpen(false)}>Close</Button>

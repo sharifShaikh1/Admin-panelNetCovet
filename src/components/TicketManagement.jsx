@@ -22,25 +22,17 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
         if (!status) return;
         setLoading(true);
 
-        const cacheKey = `${status}-${userRole}-${companyId}`;
-        const cachedData = ticketCache[cacheKey];
-
-        if (cachedData && (Date.now() - cachedData.timestamp < TICKET_CACHE_DURATION)) {
-            setTickets(cachedData.data);
-            setLoading(false);
-            return;
-        }
+        
 
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const apiStatus = status.replace('-', ' '); 
-            let url = `${API_URL}/tickets/${apiStatus}`;
+            let url = `${API_URL}/tickets/${status}`;
             if (userRole === 'Company Admin' && companyId) {
                 url += `?companyId=${companyId}`;
             }
             const { data } = await axios.get(url, config);
 
-            ticketCache[cacheKey] = { data, timestamp: Date.now() };
+            
             setTickets(data);
         } catch (err) { handleApiError(err); }
         finally { setLoading(false); }
@@ -75,7 +67,7 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
             <CardHeader className="p-4 border-b flex-shrink-0">
                 <nav className="flex space-x-4">
                     <NavLink to="/admin/tickets/Open" className={({ isActive }) => `pb-2 px-1 font-medium text-sm ${isActive ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}>Open</NavLink>
-                    <NavLink to="/admin/tickets/In-Progress" className={({ isActive }) => `pb-2 px-1 font-medium text-sm ${isActive ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}>In Progress</NavLink>
+                    <NavLink to="/admin/tickets/In-Progress" className={({ isActive }) => `pb-2 px-1 font-medium text-sm ${isActive ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}>In progress</NavLink>
                     <NavLink to="/admin/tickets/Closed" className={({ isActive }) => `pb-2 px-1 font-medium text-sm ${isActive ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-primary'}`}>Closed</NavLink>
                 </nav>
             </CardHeader>

@@ -62,10 +62,10 @@ const TicketCard = ({ ticket, onViewDetails, onStatusChange }) => {
                     <div className="flex flex-wrap gap-1">
                         {ticket.expertiseRequired.map(exp => <Badge key={exp} variant="outline">{exp}</Badge>)}
                     </div>
-                    {ticket.assignedEngineer && (
+                    {ticket.assignedPersonnel && ticket.assignedPersonnel.length > 0 && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
                            <User className="h-3 w-3" />
-                           <span>Assigned to: {ticket.assignedEngineer.name}</span>
+                           <span>Assigned to: {ticket.assignedPersonnel[0].name}</span>
                        </div>
                    )}
                 </div>

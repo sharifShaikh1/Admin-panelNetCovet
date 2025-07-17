@@ -118,7 +118,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
           )}
           {(isAdmin || isCompanyAdmin || isNetCovetManager) && (
             <li>
-              <NavLink to="/admin/tickets/Open" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
+              <NavLink to="/admin/tickets/In Progress" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/tickets') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
                   <TicketIcon className="h-5 w-5" /> {!isSidebarCollapsed && "Ticket Management"}
               </NavLink>
             </li>
@@ -153,7 +153,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
       </main>
       
       {viewingUser && <DetailsModal user={viewingUser} open={!!viewingUser} setOpen={() => setViewingUser(null)} />}
-      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onDirectAssign={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} />}
+      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onAssignFromRequest={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} />}
       {showCreateTicket && <TicketCreationForm onSubmit={handleCreateTicket} onCancel={() => setShowCreateTicket(false)} userRole={userRole} companyId={companyId} />}
       {ticketIdToAssign && <AssignEngineerModal ticketId={ticketIdToAssign} onAssign={handleAssignEngineer} onCancel={() => setTicketIdToAssign(null)} />}
       <ConfirmModal isOpen={confirmState.isOpen} title={confirmState.title} message={confirmState.message} onConfirm={confirmState.onConfirm} onCancel={() => setConfirmState({ isOpen: false })} />
