@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from 'sonner';
 
-const API_URL = 'http://localhost:8021/api';
+import { API_BASE_URL } from './config';
+const API_URL = API_BASE_URL;
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');

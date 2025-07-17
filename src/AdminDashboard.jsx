@@ -15,7 +15,8 @@ import { ModeToggle } from './components/mode-toggle';
 import { Button } from "@/components/ui/button";
 import UserCreationForm from './components/UserCreationForm';
 
-const API_URL = 'http://localhost:8021/api';
+import { API_BASE_URL } from './config';
+const API_URL = API_BASE_URL;
 
 const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
   const isAdmin = userRole === 'Admin';

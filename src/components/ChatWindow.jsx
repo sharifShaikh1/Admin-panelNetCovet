@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from 'sonner';
 import { Paperclip, Send, FileText, X, MessageSquare, Ticket as TicketIcon } from 'lucide-react';
 
-const API_URL = 'http://localhost:8021';
+import { API_BASE_URL } from '../config';
+const API_URL = API_BASE_URL.replace('/api', '');
 
 const ChatWindow = ({ token, userRole, userId, ticket }) => {
   const [socket, setSocket] = useState(null);

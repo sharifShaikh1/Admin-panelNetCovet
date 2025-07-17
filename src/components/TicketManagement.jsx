@@ -7,7 +7,8 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import BulkTicketUploadModal from './BulkTicketUploadModal';
 
-const API_URL = 'http://localhost:8021/api';
+import { API_BASE_URL } from '../config';
+const API_URL = API_BASE_URL;
 
 const TICKET_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const ticketCache = {};
