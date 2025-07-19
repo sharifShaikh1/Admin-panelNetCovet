@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from 'sonner';
-import { Paperclip, Send, FileText, X, MessageSquare, Ticket as TicketIcon } from 'lucide-react';
+import { Paperclip, Send, FileText, X, MessageSquare, Ticket as TicketIcon, Download } from 'lucide-react';
+import FileDisplay from './FileDisplay';
 
 import { API_BASE_URL } from '../config';
 const API_URL = API_BASE_URL.replace('/api', '');
@@ -21,6 +22,8 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState({});
+  const [currentConversationId, setCurrentConversationId] = useState(null);
+
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -49,8 +52,19 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
     newSocket.on('disconnect', () => console.log('Disconnected from chat server'));
 
     newSocket.on('receiveMessage', (message) => {
-      if (message.senderId?._id !== userId) {
-        setMessages((prev) => [...prev, message]);
+      // Ensure the message belongs to the active chat before adding it
+      if (message.conversationId === currentConversationId) {
+        setMessages((prev) => {
+          // Replace temp message with final one from server
+          const existingIndex = prev.findIndex(m => m.tempId === message.tempId);
+          if (existingIndex > -1) {
+            const updatedMessages = [...prev];
+            updatedMessages[existingIndex] = message;
+            return updatedMessages;
+          }
+          // Add new message if not a replacement
+          return [...prev, message];
+        });
       }
     });
 
@@ -68,44 +82,41 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
       newSocket.off('userOffline');
       newSocket.disconnect();
     };
-  }, [token, userId]);
+  }, [token, userId, currentConversationId]);
+
 
   useEffect(() => {
-    if (!socket) return;
-
-    let currentChat = activeChat;
-    if (!currentChat && !['Admin', 'NetCovet Manager'].includes(userRole) && ticket) {
-      currentChat = ticket;
-      setActiveChat(ticket);
+    if (!socket || !activeChat) {
+        setIsChatDisabled(true);
+        setMessages([]);
+        setCurrentConversationId(null);
+        return;
     }
 
-    if (!currentChat) {
-      setIsChatDisabled(true);
-      setMessages([]);
-      return;
-    }
-
-    const isDirect = !!currentChat.fullName;
+    const isDirect = !!activeChat.fullName;
     const joinEvent = isDirect ? 'joinDirectChatRoom' : 'joinTicketRoom';
-    const idToJoin = currentChat._id;
+    const idToJoin = activeChat._id;
     const fetchPayload = isDirect ? { receiverId: idToJoin } : { ticketId: idToJoin };
 
     socket.emit(joinEvent, idToJoin, (response) => {
-      if (response.success) {
-        socket.emit('fetchMessages', fetchPayload, (msgs) => setMessages(msgs || []));
-        setIsChatDisabled(false);
-        if (isDirect) {
-          socket.emit('checkUserStatus', idToJoin, (isOnline) => {
-            setOnlineUsers(prev => ({ ...prev, [idToJoin]: isOnline }));
-          });
+        if (response.success) {
+            socket.emit('fetchMessages', fetchPayload, (data) => {
+                setMessages(data.messages);
+                setCurrentConversationId(data.conversationId); // Store conversation ID
+            });
+            setIsChatDisabled(false);
+            if (isDirect) {
+                socket.emit('checkUserStatus', idToJoin, (isOnline) => {
+                    setOnlineUsers(prev => ({ ...prev, [idToJoin]: isOnline }));
+                });
+            }
+        } else {
+            toast.error("Chat Error", { description: response.message });
+            setIsChatDisabled(true);
         }
-      } else {
-        toast.error("Chat Error", { description: response.message });
-        setIsChatDisabled(true);
-      }
     });
+}, [socket, activeChat]);
 
-  }, [socket, activeChat, ticket, userRole]);
 
   useEffect(scrollToBottom, [messages]);
 
@@ -129,36 +140,60 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
 
   const sendMessage = useCallback(() => {
     if (!socket || isChatDisabled || (!newMessage.trim() && !selectedFile)) return;
-
+  
     const isDirect = !!activeChat?.fullName;
+    const tempId = `${userId}-${Date.now()}`; // Unique temporary ID
+  
     const messageData = {
+      conversationId: currentConversationId,
       ticketId: !isDirect ? activeChat?._id : null,
       receiverId: isDirect ? activeChat?._id : null,
       text: newMessage.trim(),
+      originalFileName: selectedFile ? selectedFile.name : null,
+      tempId: tempId,
     };
-
+  
+    // Optimistically update UI
+    const optimisticMessage = {
+      _id: tempId, // Use tempId as key
+      tempId: tempId,
+      senderId: { _id: userId, fullName: 'You', role: userRole },
+      text: messageData.text,
+      fileKey: selectedFile ? URL.createObjectURL(selectedFile) : null,
+      fileType: selectedFile ? selectedFile.type : null,
+      originalFileName: messageData.originalFileName,
+      timestamp: new Date().toISOString(),
+      conversationId: currentConversationId,
+      isOptimistic: true,
+    };
+    setMessages(prev => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  
     const processAndSend = (fileData = null, fileType = null) => {
       socket.emit('sendMessage', { ...messageData, fileData, fileType }, (response) => {
-        if (response.success && response.message) {
-          setMessages((prev) => [...prev, response.message]);
-          setNewMessage('');
-          setSelectedFile(null);
-          setFilePreview(null);
-          if (fileInputRef.current) fileInputRef.current.value = '';
-        } else {
+        if (!response.success) {
           toast.error("Message Failed", { description: response.message || "Could not send message." });
+          // Revert optimistic update on failure
+          setMessages(prev => prev.filter(m => m._id !== tempId));
         }
       });
     };
-
+  
     if (selectedFile) {
       const reader = new FileReader();
-      reader.onloadend = () => processAndSend(reader.result.split(',')[1], selectedFile.type);
-      reader.readAsDataURL(selectedFile);
+      reader.onload = () => {
+        const arrayBuffer = reader.result;
+        processAndSend(arrayBuffer, selectedFile.type);
+      };
+      reader.readAsArrayBuffer(selectedFile);
     } else {
       processAndSend();
     }
-  }, [socket, newMessage, selectedFile, activeChat, isChatDisabled]);
+  }, [socket, newMessage, selectedFile, activeChat, isChatDisabled, userId, userRole, currentConversationId]);
+  
 
   const getChatTitle = () => {
     if (!activeChat) return "Select a chat";
@@ -218,19 +253,29 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
         <CardContent className="flex-grow flex flex-col p-4 overflow-hidden bg-muted/20">
           <ScrollArea className="flex-1 pr-4 overflow-y-auto">
             <div className="space-y-4 py-4">
-              {messages.map((msg, index) => (
-                <div key={msg._id || `msg-${index}`} className={`flex ${msg.senderId?._id === userId ? 'justify-end' : 'justify-start'}`}>
-                  <div className="flex flex-col max-w-[70%]">
-                    {msg.senderId?._id !== userId && <span className="text-xs text-muted-foreground ml-2 mb-1">{msg.senderId?.fullName} ({msg.senderId?.role})</span>}
-                    <div className={`p-3 rounded-xl shadow-md ${msg.senderId?._id === userId ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-card text-card-foreground rounded-bl-none'}`}>
-                      {msg.fileUrl && (msg.fileType.startsWith('image') ? <img src={msg.fileUrl} alt="Attachment" className="max-w-full h-auto rounded-md mb-1" /> : <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline mb-1 block flex items-center"><FileText className="h-4 w-4 mr-1" /> {msg.fileType.split('/')[1].toUpperCase()} File</a>)}
-                      {msg.text && <p className="text-sm break-words">{msg.text}</p>}
-                      <p className="text-xs text-right mt-1 opacity-70">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              {messages.map((msg) => {
+                const isOnlyImage = msg.fileKey && msg.fileType?.startsWith('image/') && !msg.text;
+                return (
+                  <div key={msg._id} className={`flex ${msg.senderId?._id === userId ? 'justify-end' : 'justify-start'}`}>
+                    <div className="flex flex-col max-w-[70%]">
+                      {msg.senderId?._id !== userId && <span className="text-xs text-muted-foreground ml-2 mb-1">{msg.senderId?.fullName} ({msg.senderId?.role})</span>}
+                      <div className={`rounded-xl shadow-md ${isOnlyImage ? '' : `p-3 ${msg.senderId?._id === userId ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-card text-card-foreground rounded-bl-none'}`}`}>
+                        {msg.fileKey && (
+                          <FileDisplay msg={msg} token={token} API_BASE_URL={API_BASE_URL} conversationId={currentConversationId} />
+                        )}
+                        {msg.text && <p className="text-sm break-words">{msg.text}</p>}
+                        {!isOnlyImage && (
+                           <p className="text-xs text-right mt-1 opacity-70">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        )}
+                      </div>
+                       {isOnlyImage && (
+                           <p className="text-xs text-right mt-1 opacity-70">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        )}
                     </div>
                   </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
+                );
+              })}
+               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
           {filePreview && (
