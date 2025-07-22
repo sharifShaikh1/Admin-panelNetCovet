@@ -54,22 +54,29 @@ function App() {
     <>
     <ApolloProvider client={client}>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-
-        <Router>
-          <Routes>
-            <Route path="/login" element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/admin" />} />
-            <Route
-              path="/admin/*"
-              element={token ? <AdminDashboard token={token} onLogout={handleLogout} userRole={userRole} companyId={companyId} /> : <Navigate to="/login" />}
-            />
-            <Route path="*" element={<Navigate to={token ? "/admin" : "/login"} />} />
-          </Routes>
-        </Router>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Router>
+            <Routes>
+              <Route path="/login" element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/admin" />} />
+              <Route
+                path="/admin/*"
+                element={token ? <AdminDashboard token={token} onLogout={handleLogout} userRole={userRole} companyId={companyId} /> : <Navigate to="/login" />}
+              />
+              <Route path="*" element={<Navigate to={token ? "/admin" : "/login"} />} />
+            </Routes>
+          </Router>
+        </motion.div>
         <Toaster richColors />
       </ThemeProvider>
     </ApolloProvider>
     </>
   );
 }
+
+import { motion } from "framer-motion";
 
 export default App;

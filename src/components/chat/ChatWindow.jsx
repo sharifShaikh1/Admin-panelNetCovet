@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { apiRequest } from '../lib/utils';
+import { apiRequest } from '../../lib/utils';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from 'sonner';
 import { Paperclip, Send, FileText, X, MessageSquare, Ticket as TicketIcon, Download } from 'lucide-react';
-import FileDisplay from './FileDisplay';
+import FileDisplay from '../FileDisplay';
 
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../../config';
 const API_URL = API_BASE_URL.replace('/api', '');
 
 const ChatWindow = ({ token, userRole, userId, ticket }) => {
@@ -28,7 +28,7 @@ const ChatWindow = ({ token, userRole, userId, ticket }) => {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
 
   useEffect(() => {
     if (['Admin', 'NetCovet Manager'].includes(userRole)) {

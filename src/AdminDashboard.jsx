@@ -10,7 +10,7 @@ import TicketCreationForm from './components/TicketCreationForm';
 import TicketDetailsModal from './components/TicketDetailsModal';
 import AssignEngineerModal from './components/AssignEngineerModal';
 import { LogOut, Users, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
-import ChatWindow from './components/ChatWindow';
+import ChatLayout from './components/chat/ChatLayout';
 import { ModeToggle } from './components/mode-toggle';
 import { Button } from "@/components/ui/button";
 import UserCreationForm from './components/UserCreationForm';
@@ -137,7 +137,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
         </div>
       </nav>
       
-      <main className="flex-1 flex flex-col p-8 overflow-y-hidden">
+      <main className="flex-1 flex flex-col h-full p-8">
         <Routes>
           {isAdmin && (
             <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />
@@ -146,7 +146,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
             <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} userRole={userRole} companyId={companyId} />} />
           )}
           <Route path="*" element={<Navigate to={isAdmin ? "/admin/engineers/pending" : "/admin/tickets/Open"} replace />} />
-          <Route path="chat" element={<ChatWindow token={token} userRole={userRole} userId={localStorage.getItem('user-id')} userName={localStorage.getItem('user-full-name')} ticket={viewingTicket} />} />
+          <Route path="chat" element={<ChatLayout token={token} userRole={userRole} userId={localStorage.getItem('user-id')} userName={localStorage.getItem('user-full-name')} ticket={viewingTicket} />} />
           {isAdmin && (
             <Route path="create-user" element={<UserCreationForm token={token} isOpen={true} onCancel={() => navigate(-1)} onUserCreated={() => navigate('/admin/engineers/pending')} />} />
           )}
