@@ -7,14 +7,14 @@ import SkeletonLoader from './SkeletonLoader';
 
 const ChatListItem = ({ item, isActive, onClick, icon: Icon, title, subtitle }) => (
   <motion.div
-    whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.1)', transition: { duration: 0.2 } }} 
+    whileHover={{ scale: 1.02, transition: { duration: 0.2 } }} 
     className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-primary text-primary-foreground' : ''}`}
     onClick={() => onClick(item)}
   >
-    <Icon className={`h-8 w-8 ${isActive ? 'text-primary-foreground/80' : 'text-muted-foreground'}`} />
+    <Icon className={`h-8 w-8 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
     <div className="overflow-hidden">
-      <p className="font-semibold text-base truncate">{title}</p>
-      <p className={`text-sm truncate ${isActive ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{subtitle}</p>
+      <p className={`font-semibold text-base truncate ${isActive ? 'text-primary-foreground' : ''}`}>{title}</p>
+      <p className={`text-sm truncate ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{subtitle}</p>
     </div>
   </motion.div>
 );
