@@ -9,7 +9,7 @@ import ConfirmModal from './components/ConfirmModal';
 import TicketCreationForm from './components/TicketCreationForm';
 import TicketDetailsModal from './components/TicketDetailsModal';
 import AssignEngineerModal from './components/AssignEngineerModal';
-import { LogOut, Users, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
+import { LogOut, Users, UserPlus, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
 import ChatLayout from './components/chat/ChatLayout';
 import { ModeToggle } from './components/mode-toggle';
 import { Button } from "@/components/ui/button";
@@ -110,11 +110,16 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <nav className={`bg-card text-foreground flex flex-col flex-shrink-0 border-r ${isSidebarCollapsed ? 'w-20' : 'w-64'} transition-all duration-300`}>
+            {!isSidebarCollapsed && (<div className="fixed inset-0 z-20 bg-black/50 lg:hidden" onClick={() => setIsSidebarCollapsed(true)}></div>)}
+      <nav className={"bg-card text-foreground flex flex-col border-r h-full fixed lg:relative z-30 transition-transform duration-300 ease-in-out w-64 " + (isSidebarCollapsed ? "-translate-x-full" : "translate-x-0") + " lg:translate-x-0 " + (isSidebarCollapsed ? "lg:w-20" : "lg:w-64")}>
         <div className="p-6 border-b flex justify-between items-center">
           <div className="flex items-center gap-2">
-            {!isSidebarCollapsed && <h1 className="text-2xl font-bold">FieldSync</h1>}
-            <ModeToggle />
+            {!isSidebarCollapsed && (
+              <>
+                <h1 className="text-2xl font-bold">FieldSync</h1>
+                <ModeToggle />
+              </>
+            )}
           </div>
           <Button variant="ghost" size="icon" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
             <Menu className="h-5 w-5" />
@@ -131,7 +136,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
           {isAdmin && (
             <li className="mb-2">
               <NavLink to="/admin/create-user" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/create-user') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
-                  <Users className="h-5 w-5" /> {!isSidebarCollapsed && "Create User"}
+                  <UserPlus className="h-5 w-5" /> {!isSidebarCollapsed && "Create User"}
               </NavLink>
             </li>
           )}
@@ -155,7 +160,15 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
         </div>
       </nav>
       
-      <main className="flex-1 flex flex-col h-full p-8">
+      <main className="relative flex-1 flex flex-col h-full p-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSidebarCollapsed(false)}
+          className="absolute top-6 left-6 z-10 lg:hidden"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
         <Routes>
           {isAdmin && (
             <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />

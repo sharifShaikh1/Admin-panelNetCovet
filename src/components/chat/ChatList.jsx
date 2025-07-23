@@ -9,13 +9,13 @@ import { Button } from "../ui/button";
 const ChatListItem = ({ item, isActive, onClick, icon: Icon, title, subtitle }) => (
   <motion.div
     whileHover={{ scale: 1.02, transition: { duration: 0.2 } }} 
-    className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-primary text-primary-foreground' : ''}`}
+    className={`flex items-center gap-2 sm:gap-4 p-3 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-primary text-primary-foreground' : ''}`}
     onClick={() => onClick(item)}
   >
-    <Icon className={`h-8 w-8 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
     <div className="overflow-hidden">
-      <p className={`font-semibold text-base truncate ${isActive ? 'text-primary-foreground' : ''}`}>{title}</p>
-      <p className={`text-sm truncate ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{subtitle}</p>
+      <p className={`font-semibold text-sm sm:text-base truncate ${isActive ? 'text-primary-foreground' : ''}`}>{title}</p>
+      <p className={`text-xs sm:text-sm truncate ${isActive ? 'text-primary-foreground' : 'text-muted-foreground'}`}>{subtitle}</p>
     </div>
   </motion.div>
 );
@@ -38,23 +38,24 @@ const ChatList = ({ users, tickets, activeChat, setActiveChat, isLoading }) => {
   };
 
   return (
-    <Card className="w-1/5 max-w-sm flex flex-col border-r border-border rounded-none bg-muted/10">
+    <Card className="w-2/5 sm:w-1/3 md:w-1/4 lg:w-1/5 max-w-sm flex flex-col border-r border-border rounded-none bg-muted/10">
      <div className="flex p-1 border-b border-border">
         <Button
           variant={view === 'conversations' ? 'secondary' : 'ghost'}
           className="flex-1 text-xs h-8"
           onClick={() => setView('conversations')}
         >
-          Conversations
+          <MessageSquare className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Conversations</span>
         </Button>
         <Button
           variant={view === 'tickets' ? 'secondary' : 'ghost'}
           className="flex-1 text-xs h-8"
           onClick={() => setView('tickets')}
         >
-          Tickets
+          <TicketIcon className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Tickets</span>
         </Button>
-        
       </div>
       <ScrollArea className="flex-grow p-2">
         {isLoading ? (

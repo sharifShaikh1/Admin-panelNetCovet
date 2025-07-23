@@ -4,7 +4,7 @@
 
 @layer base {
     :root {
-    --background: oklch(0.98 0.005 80); /* Very light cream/off-white background */
+    --background: oklch(67.161% 0.06265 76.482); /* Very light cream/off-white background */
     --foreground: oklch(0.15 0.05 140); /* Dark green for primary text */
 
     --card: oklch(0.99 0.01 80); /* Slightly off-white for cards to distinguish from background */
