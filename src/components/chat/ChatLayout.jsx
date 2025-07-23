@@ -14,7 +14,7 @@ import SkeletonLoader from './SkeletonLoader';
 import { API_BASE_URL } from '../../config';
 const API_URL = API_BASE_URL.replace('/api', '');
 
-const ChatLayout = ({ token, userRole, userId, ticket }) => {
+const ChatLayout = ({ token, userRole, userId, tickets }) => {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -154,7 +154,7 @@ const ChatLayout = ({ token, userRole, userId, ticket }) => {
       {isAdmin && (
         <ChatList
           users={allUsers}
-          ticket={ticket}
+          tickets={tickets}
           activeChat={activeChat}
           setActiveChat={setActiveChat}
           isLoading={isLoading}

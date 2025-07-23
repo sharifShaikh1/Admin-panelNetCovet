@@ -13,7 +13,7 @@ const API_URL = API_BASE_URL;
 const TICKET_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const ticketCache = {};
 
-const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange, handleApiError, userRole, companyId }) => {
+const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange, handleApiError, userRole, companyId, onChat}) => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showBulkUpload, setShowBulkUpload] = useState(false);
@@ -80,7 +80,7 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
                         <Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" />
                     </div>
                 ) : (
-                    <TicketTable tickets={tickets} onViewDetails={onViewDetails} onStatusChange={onStatusChange} />
+                    <TicketTable tickets={tickets} onViewDetails={onViewDetails} onStatusChange={onStatusChange} onChat={onChat} />
                 )}
             </CardContent>
         </Card>

@@ -1,1 +1,5 @@
-GET http://localhost:5173/src/index.css?t=1753196679253 net::ERR_ABORTED 500 (Internal Server Error)
+ChatLayout.jsx:33 Uncaught ReferenceError: initialActiveChat is not defined
+    at ChatLayout (ChatLayout.jsx:33:7)
+
+﻿
+

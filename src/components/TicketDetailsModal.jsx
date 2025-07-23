@@ -105,6 +105,7 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
               <Button onClick={() => setShowPaymentForm(true)}>Process Payment</Button>
             )}
             <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
+            <Button onClick={() => { onChat(ticket); setOpen(false); }}>View Chat</Button>
           </div>
         </DialogFooter>
       </DialogContent>

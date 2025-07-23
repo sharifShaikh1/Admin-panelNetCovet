@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Copy, Check, MoreHorizontal, User, Calendar, Clock, Building, MapPin } from "lucide-react";
+import { Copy, Check, MoreHorizontal, User, Calendar, Clock, Building, MapPin, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange }) => {
@@ -72,20 +71,25 @@ const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange }) => {
                     <Clock className="h-3 w-3" />
                     <span>{lastUpdateDate}</span>
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => e.stopPropagation()}>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onViewDetails(ticket)}>View Details</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={ticket.status === 'Open'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Open'))}>Mark as Open</DropdownMenuItem>
-                        <DropdownMenuItem disabled={ticket.status === 'In Progress'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'In Progress'))}>Mark as In Progress</DropdownMenuItem>
-                        <DropdownMenuItem disabled={ticket.status === 'Closed'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Closed'))} className="text-destructive focus:text-destructive">Mark as Closed</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => handleActionClick(e, () => onChat(ticket))}>
+                        <MessageSquare className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => e.stopPropagation()}>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onViewDetails(ticket)}>View Details</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem disabled={ticket.status === 'Open'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Open'))}>Mark as Open</DropdownMenuItem>
+                            <DropdownMenuItem disabled={ticket.status === 'In Progress'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'In Progress'))}>Mark as In Progress</DropdownMenuItem>
+                            <DropdownMenuItem disabled={ticket.status === 'Closed'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Closed'))} className="text-destructive focus:text-destructive">Mark as Closed</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
         </div>
     );

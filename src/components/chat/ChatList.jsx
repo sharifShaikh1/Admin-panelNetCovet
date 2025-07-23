@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ticket as TicketIcon, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SkeletonLoader from './SkeletonLoader';
+import { Button } from "../ui/button";
 
 const ChatListItem = ({ item, isActive, onClick, icon: Icon, title, subtitle }) => (
   <motion.div
@@ -19,7 +20,8 @@ const ChatListItem = ({ item, isActive, onClick, icon: Icon, title, subtitle }) 
   </motion.div>
 );
 
-const ChatList = ({ users, ticket, activeChat, setActiveChat, isLoading }) => {
+const ChatList = ({ users, tickets, activeChat, setActiveChat, isLoading }) => {
+  const [view, setView] = useState('conversations');
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -37,8 +39,22 @@ const ChatList = ({ users, ticket, activeChat, setActiveChat, isLoading }) => {
 
   return (
     <Card className="w-1/5 max-w-sm flex flex-col border-r border-border rounded-none bg-muted/10">
-     <div className="flex flex-col p-1.5 border-b border-border justify-center items-center align-items-center">
-        <div className="text-lg font-semibold tracking-tight flex items-center">Conversations</div>
+     <div className="flex p-1 border-b border-border">
+        <Button
+          variant={view === 'conversations' ? 'secondary' : 'ghost'}
+          className="flex-1 text-xs h-8"
+          onClick={() => setView('conversations')}
+        >
+          Conversations
+        </Button>
+        <Button
+          variant={view === 'tickets' ? 'secondary' : 'ghost'}
+          className="flex-1 text-xs h-8"
+          onClick={() => setView('tickets')}
+        >
+          Tickets
+        </Button>
+        
       </div>
       <ScrollArea className="flex-grow p-2">
         {isLoading ? (
@@ -50,30 +66,33 @@ const ChatList = ({ users, ticket, activeChat, setActiveChat, isLoading }) => {
             animate="visible"
             className="space-y-1"
           >
-            {ticket && (
-              <motion.div variants={itemVariants}>
-                <ChatListItem
-                  item={ticket}
-                  isActive={activeChat?._id === ticket._id}
-                  onClick={setActiveChat}
-                  icon={TicketIcon}
-                  title={`Ticket #${ticket.ticketId}`}
-                  subtitle={ticket.workDescription}
-                />
-              </motion.div>
+            {view === 'tickets' ? (
+              tickets.map((ticket) => (
+                <motion.div variants={itemVariants} key={ticket._id}>
+                  <ChatListItem
+                    item={ticket}
+                    isActive={activeChat?._id === ticket._id}
+                    onClick={setActiveChat}
+                    icon={TicketIcon}
+                    title={`Ticket #${ticket.ticketId}`}
+                    subtitle={ticket.workDescription}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              users.map((user) => (
+                <motion.div variants={itemVariants} key={user._id}>
+                  <ChatListItem
+                    item={user}
+                    isActive={activeChat?._id === user._id}
+                    onClick={setActiveChat}
+                    icon={MessageSquare}
+                    title={user.fullName}
+                    subtitle={user.role}
+                  />
+                </motion.div>
+              ))
             )}
-            {users.map((user) => (
-              <motion.div variants={itemVariants} key={user._id}>
-                <ChatListItem
-                  item={user}
-                  isActive={activeChat?._id === user._id}
-                  onClick={setActiveChat}
-                  icon={MessageSquare}
-                  title={user.fullName}
-                  subtitle={user.role}
-                />
-              </motion.div>
-            ))}
           </motion.div>
         )}
       </ScrollArea>

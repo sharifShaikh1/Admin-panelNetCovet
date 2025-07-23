@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import { Routes, Route, NavLink, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -29,6 +29,8 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
   const [confirmState, setConfirmState] = useState({ isOpen: false });
   const [showUserCreationForm, setShowUserCreationForm] = useState(false); // New state for user creation form
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // New state for sidebar collapse
+  const [inProgressTickets, setInProgressTickets] = useState([]);
+  const [selectedTicketForChat, setSelectedTicketForChat] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,6 +40,22 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
     toast.error("An Error Occurred", { description: err.response?.data?.message || 'Please try again later.' });
     if (err.response?.status === 401 || err.response?.status === 403) onLogout();
   }, [onLogout]);
+
+  
+
+  useEffect(() => {
+    const fetchInProgressTickets = async () => {
+      if (isAdmin || isNetCovetManager || isCompanyAdmin) {
+        try {
+          const { data } = await axios.get(`${API_URL}/tickets/In-Progress`, getConfig());
+          setInProgressTickets(data);
+        } catch (err) {
+          handleApiError(err);
+        }
+      }
+    };
+    fetchInProgressTickets();
+  }, [token, isAdmin, isNetCovetManager, isCompanyAdmin, getConfig, handleApiError]);
 
   const handleApprovalAction = async (userId, action) => {
     setConfirmState({ isOpen: false });
@@ -146,7 +164,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
             <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} userRole={userRole} companyId={companyId} />} />
           )}
           <Route path="*" element={<Navigate to={isAdmin ? "/admin/engineers/pending" : "/admin/tickets/Open"} replace />} />
-          <Route path="chat" element={<ChatLayout token={token} userRole={userRole} userId={localStorage.getItem('user-id')} userName={localStorage.getItem('user-full-name')} ticket={viewingTicket} />} />
+          <Route path="chat" element={<ChatLayout token={token} userRole={userRole} userId={localStorage.getItem('user-id')} tickets={inProgressTickets} initialActiveChat={selectedTicketForChat} />} />
           {isAdmin && (
             <Route path="create-user" element={<UserCreationForm token={token} isOpen={true} onCancel={() => navigate(-1)} onUserCreated={() => navigate('/admin/engineers/pending')} />} />
           )}
@@ -154,7 +172,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
       </main>
       
       {viewingUser && <DetailsModal user={viewingUser} open={!!viewingUser} setOpen={() => setViewingUser(null)} />}
-      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onAssignFromRequest={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} />}
+      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onAssignFromRequest={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} onChat={handleChatClick} />}
       {showCreateTicket && <TicketCreationForm onSubmit={handleCreateTicket} onCancel={() => setShowCreateTicket(false)} userRole={userRole} companyId={companyId} />}
       {ticketIdToAssign && <AssignEngineerModal ticketId={ticketIdToAssign} onAssign={handleAssignEngineer} onCancel={() => setTicketIdToAssign(null)} />}
       <ConfirmModal isOpen={confirmState.isOpen} title={confirmState.title} message={confirmState.message} onConfirm={confirmState.onConfirm} onCancel={() => setConfirmState({ isOpen: false })} />
