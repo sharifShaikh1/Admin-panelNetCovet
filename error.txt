@@ -1,5 +1,11 @@
-ChatLayout.jsx:33 Uncaught ReferenceError: initialActiveChat is not defined
-    at ChatLayout (ChatLayout.jsx:33:7)
-
-﻿
-
+Uncaught ReferenceError: useTheme is not defined
+    at MessageBubble (MessageBubble.jsx:11:21)
+    at react-stack-bottom-frame (react-dom_client.js?v=e79419f0:17424:20)
+    at renderWithHooks (react-dom_client.js?v=e79419f0:4206:24)
+    at updateFunctionComponent (react-dom_client.js?v=e79419f0:6619:21)
+    at beginWork (react-dom_client.js?v=e79419f0:7654:20)
+    at runWithFiberInDEV (react-dom_client.js?v=e79419f0:1485:72)
+    at performUnitOfWork (react-dom_client.js?v=e79419f0:10868:98)
+    at workLoopSync (react-dom_client.js?v=e79419f0:10728:43)
+    at renderRootSync (react-dom_client.js?v=e79419f0:10711:13)
+    at performWorkOnRoot (react-dom_client.js?v=e79419f0:10359:46)Understand this error

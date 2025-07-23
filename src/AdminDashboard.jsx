@@ -160,12 +160,12 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
         </div>
       </nav>
       
-      <main className="relative flex-1 flex flex-col h-full p-8">
+      <main className="relative flex-1 flex flex-col h-full p-8 pt-20 pl-20 lg:p-8">
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={() => setIsSidebarCollapsed(false)}
-          className="absolute top-6 left-6 z-10 lg:hidden"
+          className="absolute top-8 left-8 z-10 lg:hidden"
         >
           <Menu className="h-6 w-6" />
         </Button>

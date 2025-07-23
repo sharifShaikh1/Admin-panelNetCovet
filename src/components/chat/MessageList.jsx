@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageBubble from './MessageBubble';
 import { AnimatePresence } from 'framer-motion';
+import { useTheme } from '../theme-provider';
 
 const MessageList = ({ messages, userId, token, API_BASE_URL, conversationId }) => {
   const scrollAreaRef = useRef(null);
@@ -16,8 +17,11 @@ const MessageList = ({ messages, userId, token, API_BASE_URL, conversationId }) 
     }
   }, [messages]);
 
+  const { theme } = useTheme();
+  const backgroundStyle = theme === 'dark' ? { backgroundImage: `url('/src/assets/ChatBackground.jpg')` } : {};
+
   return (
-    <ScrollArea className="flex-1 p-4 bg-muted/20 overflow-y-auto" ref={scrollAreaRef}>
+    <ScrollArea className="flex-1 p-4 overflow-y-auto bg-cover bg-center" style={backgroundStyle} ref={scrollAreaRef}>
       <div className="space-y-6 py-4 pr-4">
         <AnimatePresence initial={false}>
           {messages.map((msg) => (

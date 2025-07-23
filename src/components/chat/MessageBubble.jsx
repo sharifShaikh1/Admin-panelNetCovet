@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import FileDisplay from '../FileDisplay'; // Assuming this component exists and works as intended
+import FileDisplay from '../FileDisplay';
+import { useTheme } from '../theme-provider';
 
 const MessageBubble = ({ msg, isSender, token, API_BASE_URL, conversationId }) => {
   const hasFile = !!msg.fileKey;
@@ -8,8 +9,9 @@ const MessageBubble = ({ msg, isSender, token, API_BASE_URL, conversationId }) =
   const isOptimistic = !!msg.isOptimistic;
 
   const bubbleAlignment = isSender ? "justify-end" : "justify-start";
+  const { theme } = useTheme();
   const bubbleClasses = isSender
-    ? "bg-primary text-primary-foreground rounded-br-none"
+    ? (theme === 'dark' ? "bg-[hsl(210,20%,25%)] text-primary-foreground rounded-br-none" : "bg-primary text-primary-foreground rounded-br-none")
     : "bg-card text-card-foreground rounded-bl-none";
   const senderName = isSender ? "You" : `${msg.senderId?.fullName} (${msg.senderId?.role})`;
 
