@@ -42,6 +42,6 @@ const MessageBubble = ({ msg, isSender, token, API_BASE_URL, conversationId }) =
       </div>
     </motion.div>
   );
-};
 
+};
 export default MessageBubble;
