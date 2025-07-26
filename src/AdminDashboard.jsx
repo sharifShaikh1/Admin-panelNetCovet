@@ -9,7 +9,7 @@ import ConfirmModal from './components/ConfirmModal';
 import TicketCreationForm from './components/TicketCreationForm';
 import TicketDetailsModal from './components/TicketDetailsModal';
 import AssignEngineerModal from './components/AssignEngineerModal';
-import { LogOut, Users, UserPlus, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
+import { LogOut, Users, Ticket as TicketIcon, MessageSquare, Menu } from 'lucide-react';
 import ChatLayout from './components/chat/ChatLayout';
 import { ModeToggle } from './components/mode-toggle';
 import { Button } from "@/components/ui/button";
@@ -23,14 +23,14 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
   const isCompanyAdmin = userRole === 'Company Admin';
   const isNetCovetManager = userRole === 'NetCovet Manager';
   const [viewingUser, setViewingUser] = useState(null);
+  const [inProgressTickets, setInProgressTickets] = useState([]);
+
   const [viewingTicket, setViewingTicket] = useState(null);
   const [showCreateTicket, setShowCreateTicket] = useState(false);
   const [ticketIdToAssign, setTicketIdToAssign] = useState(null);
   const [confirmState, setConfirmState] = useState({ isOpen: false });
   const [showUserCreationForm, setShowUserCreationForm] = useState(false); // New state for user creation form
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // New state for sidebar collapse
-  const [inProgressTickets, setInProgressTickets] = useState([]);
-  const [selectedTicketForChat, setSelectedTicketForChat] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -40,8 +40,6 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
     toast.error("An Error Occurred", { description: err.response?.data?.message || 'Please try again later.' });
     if (err.response?.status === 401 || err.response?.status === 403) onLogout();
   }, [onLogout]);
-
-  
 
   useEffect(() => {
     const fetchInProgressTickets = async () => {
@@ -109,18 +107,15 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-            {!isSidebarCollapsed && (<div className="fixed inset-0 z-20 bg-black/50 lg:hidden" onClick={() => setIsSidebarCollapsed(true)}></div>)}
-      <nav className={"bg-card text-foreground flex flex-col border-r h-full fixed lg:relative z-30 transition-transform duration-300 ease-in-out w-64 " + (isSidebarCollapsed ? "-translate-x-full" : "translate-x-0") + " lg:translate-x-0 " + (isSidebarCollapsed ? "lg:w-20" : "lg:w-64")}>
-        <div className="p-6 border-b flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            {!isSidebarCollapsed && (
-              <>
-                <h1 className="text-2xl font-bold">FieldSync</h1>
-                <ModeToggle />
-              </>
-            )}
-          </div>
+    <div className="bg-background min-h-screen">
+      <nav className={`fixed top-0 left-0 h-full bg-card text-foreground flex flex-col z-30 border-r shadow-lg ${isSidebarCollapsed ? 'w-20' : 'w-64'} transition-all duration-300`}>
+        <div className={`p-6 border-b flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!isSidebarCollapsed && (
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">FieldSync</h1>
+              <ModeToggle />
+            </div>
+          )}
           <Button variant="ghost" size="icon" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}>
             <Menu className="h-5 w-5" />
           </Button>
@@ -136,7 +131,7 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
           {isAdmin && (
             <li className="mb-2">
               <NavLink to="/admin/create-user" className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${location.pathname.startsWith('/admin/create-user') ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`}>
-                  <UserPlus className="h-5 w-5" /> {!isSidebarCollapsed && "Create User"}
+                  <Users className="h-5 w-5" /> {!isSidebarCollapsed && "Create User"}
               </NavLink>
             </li>
           )}
@@ -160,32 +155,26 @@ const AdminDashboard = ({ token, onLogout, userRole, companyId }) => {
         </div>
       </nav>
       
-      <main className="relative flex-1 flex flex-col h-full p-8 pt-20 pl-20 lg:p-8">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsSidebarCollapsed(false)}
-          className="absolute top-8 left-8 z-10 lg:hidden"
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
-        <Routes>
-          {isAdmin && (
-            <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />
-          )}
-          {(isAdmin || isCompanyAdmin || isNetCovetManager) && (
-            <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} userRole={userRole} companyId={companyId} />} />
-          )}
-          <Route path="*" element={<Navigate to={isAdmin ? "/admin/engineers/pending" : "/admin/tickets/Open"} replace />} />
-          <Route path="chat" element={<ChatLayout token={token} userRole={userRole} userId={localStorage.getItem('user-id')} tickets={inProgressTickets} initialActiveChat={selectedTicketForChat} />} />
-          {isAdmin && (
-            <Route path="create-user" element={<UserCreationForm token={token} isOpen={true} onCancel={() => navigate(-1)} onUserCreated={() => navigate('/admin/engineers/pending')} />} />
-          )}
-        </Routes>
+      <main className={'ml-20'}>
+        <div className="p-8 h-screen">
+            <Routes>
+              {isAdmin && (
+                <Route path="engineers/:status" element={<UserManagement token={token} onAction={promptForAction} onViewDetails={setViewingUser} handleApiError={handleApiError} />} />
+              )}
+              {(isAdmin || isCompanyAdmin || isNetCovetManager) && (
+                <Route path="tickets/:status" element={<TicketManagement token={token} onViewDetails={setViewingTicket} onCreateTicket={() => setShowCreateTicket(true)} onStatusChange={handleStatusChange} handleApiError={handleApiError} userRole={userRole} companyId={companyId} />} />
+              )}
+              <Route path="*" element={<Navigate to={isAdmin ? "/admin/engineers/pending" : "/admin/tickets/Open"} replace />} />
+              <Route path="chat" element={<ChatLayout token={token} userRole={userRole} userId={localStorage.getItem('user-id')} tickets={inProgressTickets} />} />
+              {isAdmin && (
+                <Route path="create-user" element={<UserCreationForm token={token} isOpen={true} onCancel={() => navigate(-1)} onUserCreated={() => navigate('/admin/engineers/pending')} />} />
+              )}
+            </Routes>
+        </div>
       </main>
       
       {viewingUser && <DetailsModal user={viewingUser} open={!!viewingUser} setOpen={() => setViewingUser(null)} />}
-      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onAssignFromRequest={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} onChat={handleChatClick} />}
+      {viewingTicket && <TicketDetailsModal ticket={viewingTicket} open={!!viewingTicket} setOpen={() => setViewingTicket(null)} onAssignFromRequest={handleAssignEngineer} onManualAssignRequest={() => setTicketIdToAssign(viewingTicket._id)} userRole={userRole} token={token} />}
       {showCreateTicket && <TicketCreationForm onSubmit={handleCreateTicket} onCancel={() => setShowCreateTicket(false)} userRole={userRole} companyId={companyId} />}
       {ticketIdToAssign && <AssignEngineerModal ticketId={ticketIdToAssign} onAssign={handleAssignEngineer} onCancel={() => setTicketIdToAssign(null)} />}
       <ConfirmModal isOpen={confirmState.isOpen} title={confirmState.title} message={confirmState.message} onConfirm={confirmState.onConfirm} onCancel={() => setConfirmState({ isOpen: false })} />
