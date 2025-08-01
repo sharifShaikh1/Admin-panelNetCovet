@@ -4,7 +4,7 @@ import MessageBubble from './MessageBubble';
 import { AnimatePresence } from 'framer-motion';
 import { useTheme } from '../theme-provider';
 
-const MessageList = ({ messages, userId, token, API_BASE_URL, conversationId }) => {
+const MessageList = ({ messages, userId, token, API_BASE_URL, conversationId, onReply }) => {
   const scrollAreaRef = useRef(null);
 
   useEffect(() => {
@@ -32,6 +32,7 @@ const MessageList = ({ messages, userId, token, API_BASE_URL, conversationId }) 
               token={token}
               API_BASE_URL={API_BASE_URL}
               conversationId={conversationId}
+              onReply={onReply}
             />
           ))}
         </AnimatePresence>

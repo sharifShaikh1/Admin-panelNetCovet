@@ -22,6 +22,7 @@ const ChatLayout = ({ token, userRole, userId, tickets }) => {
   const [onlineUsers, setOnlineUsers] = useState({});
   const [currentConversationId, setCurrentConversationId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [replyingToMessage, setReplyingToMessage] = useState(null);
 
   // Fetch initial user list
   useEffect(() => {
@@ -100,7 +101,7 @@ const ChatLayout = ({ token, userRole, userId, tickets }) => {
     });
   }, [socket, activeChat]);
 
-  const sendMessage = useCallback((messageText, file) => {
+  const sendMessage = useCallback((messageText, file, replyToId) => {
     if (!socket || !activeChat || (!messageText.trim() && !file)) return;
 
     const isDirect = !!activeChat.fullName;
@@ -112,6 +113,7 @@ const ChatLayout = ({ token, userRole, userId, tickets }) => {
       text: messageText.trim(),
       originalFileName: file ? file.name : null,
       tempId,
+      replyTo: replyToId, // Add replyToId here
     };
 
     // Optimistic UI update
@@ -172,9 +174,9 @@ const ChatLayout = ({ token, userRole, userId, tickets }) => {
               className="flex flex-col h-full min-h-0 overflow-hidden"
             >
               <ChatHeader activeChat={activeChat} onlineUsers={onlineUsers} />
-              <MessageList messages={messages} userId={userId} token={token} API_BASE_URL={API_BASE_URL} conversationId={currentConversationId} className="flex-1" />
+              <MessageList messages={messages} userId={userId} token={token} API_BASE_URL={API_BASE_URL} conversationId={currentConversationId} className="flex-1" onReply={setReplyingToMessage} />
               <div className="flex-shrink-0 p-4 border-t border-border bg-card rounded-b-xl">
-                <ChatInput onSendMessage={sendMessage} />
+                <ChatInput onSendMessage={sendMessage} replyingToMessage={replyingToMessage} setReplyingToMessage={setReplyingToMessage} />
               </div>
             </motion.div>
           ) : (

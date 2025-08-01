@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Paperclip, Send, FileText, X } from 'lucide-react';
+import { Paperclip, Send, FileText, X, MessageSquareReply } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ChatInput = ({ onSendMessage }) => {
+const ChatInput = ({ onSendMessage, replyingToMessage, setReplyingToMessage }) => {
   const [newMessage, setNewMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
@@ -35,14 +35,38 @@ const ChatInput = ({ onSendMessage }) => {
   };
 
   const handleSend = () => {
-    onSendMessage(newMessage, selectedFile);
+    onSendMessage(newMessage, selectedFile, replyingToMessage?._id);
     setNewMessage('');
     clearFile();
+    setReplyingToMessage(null); // Clear reply after sending
   };
 
   return (
     <div className="flex-shrink-0 p-4 border-t border-border bg-background">
       <AnimatePresence>
+        {replyingToMessage && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-2 p-2 border border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950 rounded-lg overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquareReply className="h-4 w-4 text-blue-600" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-600">Replying to {replyingToMessage.senderId?.fullName || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate max-w-[calc(100%-40px)]">
+                    {replyingToMessage.text || (replyingToMessage.fileKey ? (replyingToMessage.fileType?.startsWith('image/') ? 'Image' : 'File') : 'No content')}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setReplyingToMessage(null)} className="shrink-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
         {selectedFile && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -64,6 +88,14 @@ const ChatInput = ({ onSendMessage }) => {
       </AnimatePresence>
       <div className="flex items-center gap-2">
         <Input
+          type="text"
+          placeholder="Type your message..."
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+          className="flex-grow"
+        />
+        <Input
           type="file"
           ref={fileInputRef}
           onChange={handleFileSelect}
@@ -73,14 +105,6 @@ const ChatInput = ({ onSendMessage }) => {
         <Button variant="ghost" size="icon" onClick={() => fileInputRef.current.click()} className="shrink-0">
           <Paperclip className="h-5 w-5" />
         </Button>
-        <Input
-          type="text"
-          placeholder="Type your message..."
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          className="flex-grow"
-        />
         <Button onClick={handleSend} disabled={!newMessage.trim() && !selectedFile}>
           <Send className="h-5 w-5" />
         </Button>
