@@ -65,7 +65,8 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
               users={users} 
               view={status} 
               onAction={onAction} 
-              onViewDetails={onViewDetails} 
+              onViewDetails={onViewDetails}
+              token={token}
             />
           )}
         </CardContent>

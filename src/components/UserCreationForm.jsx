@@ -14,6 +14,7 @@ const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
     password: '',
     role: '',
     companyId: '',
+    upiId: '',
   });
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,7 @@ const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
       ...prev,
       role: value,
       companyId: value === 'Company Admin' ? prev.companyId : '', // Clear companyId if not Company Admin
+      upiId: value === 'Engineer' ? prev.upiId : '', // Clear upiId if not Engineer
     }));
   };
 
@@ -105,6 +107,12 @@ const UserCreationForm = ({ token, isOpen, onCancel, onUserCreated }) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+          {formData.role === 'Engineer' && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="upiId" className="text-right">UPI ID</Label>
+              <Input id="upiId" name="upiId" value={formData.upiId} onChange={handleChange} className="col-span-3" required />
             </div>
           )}
           <DialogFooter>

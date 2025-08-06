@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import PaymentForm from './PaymentForm';
-
-const stripePromise = loadStripe(import.meta.env.VITE_REACT_APP_STRIPE_PUBLISHABLE_KEY);
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Link, MapPin, DollarSign, Wrench, User, Clock } from 'lucide-react';
+import { Link, MapPin, DollarSign, Wrench, User, Clock, CreditCard } from 'lucide-react'; // Added CreditCard
+import { toast } from 'sonner';
 
 const InteractionItem = ({ item }) => (
   <div className="flex items-start space-x-3 text-sm">
@@ -33,16 +29,30 @@ const DetailItem = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManualAssignRequest, userRole, token }) => {
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManualAssignRequest, userRole, onChat, onPaymentSuccess }) => {
+  const [isPaying, setIsPaying] = useState(false);
 
   if (!ticket) return null;
 
-  const handlePaymentSuccess = () => {
-    setShowPaymentForm(false);
-    setOpen(false); // Close the modal after successful payment
-    // You might want to trigger a refresh of the ticket list here
+  const handlePayout = async () => {
+    setIsPaying(true);
+    try {
+      const response = await api.post('/payment/stripe/payout', { ticketId: ticket._id });
+      toast.success('Payout Successful!', {
+        description: `Transaction ID: ${response.data.transactionId}`,
+      });
+      onPaymentSuccess(ticket._id); // Notify parent to refresh data
+      setOpen(false);
+    } catch (error) {
+      toast.error('Payout Failed', {
+        description: error.response?.data?.message || 'An unexpected error occurred.',
+      });
+    } finally {
+      setIsPaying(false);
+    }
   };
+
+  const canPay = ticket.status === 'Closed' && ticket.paymentStatus !== 'Paid';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -61,7 +71,7 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
               <DetailItem icon={DollarSign} label="Amount" value={`₹${ticket.amount}`} />
-            <DetailItem label="Payment Status" value={ticket.paymentStatus} />
+              <DetailItem label="Payment Status" value={ticket.paymentStatus} />
               <DetailItem icon={Wrench} label="Expertise" value={ticket.expertiseRequired.join(', ')} />
               {ticket.assignedPersonnel && ticket.assignedPersonnel.length > 0 && (
                 <DetailItem 
@@ -97,31 +107,25 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
           </div>
         </ScrollArea>
         <DialogFooter className="pt-4 border-t border-border">
-          <div className="flex w-full justify-end gap-3">
-            {ticket.status === 'Open' && !ticket.assignedEngineer && ticket.accessRequests?.length === 0 && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
-              <Button onClick={() => { setOpen(false); onManualAssignRequest(); }}>Assign Manually</Button>
-            )}
-            {ticket.status === 'Closed' && ticket.paymentStatus === 'Pending' && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
-              <Button onClick={() => setShowPaymentForm(true)}>Process Payment</Button>
-            )}
-            <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
-            <Button onClick={() => { onChat(ticket); setOpen(false); }}>View Chat</Button>
+          <div className="flex w-full justify-between items-center">
+            <div>
+              {canPay && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
+                <Button onClick={handlePayout} disabled={isPaying}>
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  {isPaying ? 'Processing Payout...' : 'Pay with Stripe'}
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-3">
+              {ticket.status === 'Open' && !ticket.assignedEngineer && ticket.accessRequests?.length === 0 && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
+                <Button onClick={() => { setOpen(false); onManualAssignRequest(); }}>Assign Manually</Button>
+              )}
+              <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
+              <Button onClick={() => { onChat(ticket); setOpen(false); }}>View Chat</Button>
+            </div>
           </div>
         </DialogFooter>
       </DialogContent>
-      {showPaymentForm && (
-        <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Process Payment</DialogTitle>
-              <DialogDescription>Enter payment details for Ticket ID: {ticket.ticketId}</DialogDescription>
-            </DialogHeader>
-            <Elements stripe={stripePromise}>
-              <PaymentForm ticketId={ticket._id} amount={ticket.amount} token={token} onPaymentSuccess={handlePaymentSuccess} onCancel={() => setShowPaymentForm(false)} />
-            </Elements>
-          </DialogContent>
-        </Dialog>
-      )}
     </Dialog>
   );
 };

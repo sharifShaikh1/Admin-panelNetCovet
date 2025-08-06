@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Copy, Check, MoreHorizontal, User, Calendar, Clock, Building, MapPin, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
-const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange }) => {
+const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange, onChat, onPay }) => {
     const [copied, setCopied] = useState(false);
 
     const handleActionClick = (e, action) => {
@@ -72,6 +72,11 @@ const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange }) => {
                     <span>{lastUpdateDate}</span>
                 </div>
                 <div className="flex items-center gap-2">
+                    {ticket.status === 'Closed' && ticket.paymentStatus === 'Pending' && (
+                        <Button variant="primary" size="sm" className="h-7" onClick={(e) => handleActionClick(e, () => onPay(ticket))}>
+                            Pay
+                        </Button>
+                    )}
                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => handleActionClick(e, () => onChat(ticket))}>
                         <MessageSquare className="h-4 w-4" />
                     </Button>

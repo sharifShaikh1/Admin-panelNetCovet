@@ -1,8 +1,20 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { apiRequest } from '../lib/utils';
+import { toast } from 'sonner';
 
-const UserTable = ({ users, view, onAction, onViewDetails }) => {
+const UserTable = ({ users, view, onAction, onViewDetails, token }) => {
+
+  const handleOnboard = async (userId) => {
+    try {
+      const response = await apiRequest('post', '/stripe/onboard-user', { userId }, token);
+      window.location.href = response.url;
+    } catch (err) {
+      toast.error("Failed to start Stripe onboarding", { description: err.message });
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -12,8 +24,12 @@ const UserTable = ({ users, view, onAction, onViewDetails }) => {
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Employee ID</TableHead>
+            <TableHead>UPI ID</TableHead>
             {view === 'pending' && (
               <TableHead>Actions</TableHead>
+            )}
+             {view !== 'pending' && (
+              <TableHead>Stripe Onboarding</TableHead>
             )}
             <TableHead>Details</TableHead>
           </TableRow>
@@ -25,6 +41,7 @@ const UserTable = ({ users, view, onAction, onViewDetails }) => {
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.phoneNumber}</TableCell>
               <TableCell>{user.employeeId}</TableCell>
+              <TableCell>{user.upiId}</TableCell>
               {view === 'pending' && (
                 <TableCell>
                   <Button
@@ -41,6 +58,17 @@ const UserTable = ({ users, view, onAction, onViewDetails }) => {
                     onClick={() => onAction(user._id, 'reject')}
                   >
                     Reject
+                  </Button>
+                </TableCell>
+              )}
+              {view !== 'pending' && user.role === 'Engineer' && (
+                <TableCell>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleOnboard(user._id)}
+                  >
+                    {user.stripeAccountId ? 'Manage Onboarding' : 'Onboard to Stripe'}
                   </Button>
                 </TableCell>
               )}

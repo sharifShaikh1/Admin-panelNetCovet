@@ -1,11 +1,9 @@
-FileDisplay: Image failed to load 
-SyntheticBaseEvent {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: img.h-auto.rounded-md.border.p-1, …}
-
-FileDisplay.jsx:88 FileDisplay: Image failed to load 
-SyntheticBaseEvent {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: img.h-auto.rounded-md.border.p-1, …}
-FileDisplay.jsx:88 FileDisplay: Image failed to load 
-SyntheticBaseEvent {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: img.h-auto.rounded-md.border.p-1, …}
-FileDisplay.jsx:88 FileDisplay: Image failed to load 
-SyntheticBaseEvent {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: img.h-auto.rounded-md.border.p-1, …}
-﻿
-
+[plugin:vite:import-analysis] Failed to resolve import "../api" from "src/components/TicketDetailsModal.jsx". Does the file exist?
+E:/sharif/assignment/FieldEngineerSystem/my-admin-panel1/src/components/TicketDetailsModal.jsx:8:16
+23 |  import { Link, MapPin, DollarSign, Wrench, User, Clock, CreditCard } from "lucide-react";
+24 |  import { toast } from "sonner";
+25 |  import api from "../api";
+   |                   ^
+26 |  const InteractionItem = ({ item }) => /* @__PURE__ */ jsxDEV("div", { className: "flex items-start space-x-3 text-sm", children: [
+27 |    /* @__PURE__ */ jsxDEV("p", { className: "text-muted-foreground w-24 flex-shrink-0", children: new Date(item.timestamp).toLocaleString("en-IN") }, void 0, false, {
+    at TransformPluginContext._formatLog (file:///E:/sharif/assignment/FieldEn

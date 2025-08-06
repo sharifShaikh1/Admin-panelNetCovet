@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import BulkTicketUploadModal from './BulkTicketUploadModal';
+import PaymentModal from './PaymentModal';
 
 import { API_BASE_URL } from '../config';
 const API_URL = API_BASE_URL;
@@ -17,6 +18,8 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showBulkUpload, setShowBulkUpload] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState(null);
     const { status } = useParams();
 
     const fetchTickets = useCallback(async () => {
@@ -45,6 +48,17 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
 
     const handleUploadComplete = () => {
         setShowBulkUpload(false);
+        fetchTickets();
+    };
+
+    const handlePay = (ticket) => {
+        setSelectedTicket(ticket);
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentCancel = () => {
+        setShowPaymentModal(false);
+        setSelectedTicket(null);
         fetchTickets();
     };
 
@@ -80,7 +94,7 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
                         <Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" />
                     </div>
                 ) : (
-                    <TicketTable tickets={tickets} onViewDetails={onViewDetails} onStatusChange={onStatusChange} onChat={onChat} />
+                    <TicketTable tickets={tickets} onViewDetails={onViewDetails} onStatusChange={onStatusChange} onChat={onChat} onPay={handlePay} />
                 )}
             </CardContent>
         </Card>
@@ -91,6 +105,15 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
   onCancel={() => setShowBulkUpload(false)}
   onComplete={handleUploadComplete}
 />
+
+{selectedTicket && (
+    <PaymentModal
+        isOpen={showPaymentModal}
+        onCancel={handlePaymentCancel}
+        ticket={selectedTicket}
+        token={token}
+    />
+)}
 
       </div>
     );
