@@ -1,9 +1,23 @@
-[plugin:vite:import-analysis] Failed to resolve import "../api" from "src/components/TicketDetailsModal.jsx". Does the file exist?
-E:/sharif/assignment/FieldEngineerSystem/my-admin-panel1/src/components/TicketDetailsModal.jsx:8:16
-23 |  import { Link, MapPin, DollarSign, Wrench, User, Clock, CreditCard } from "lucide-react";
-24 |  import { toast } from "sonner";
-25 |  import api from "../api";
-   |                   ^
-26 |  const InteractionItem = ({ item }) => /* @__PURE__ */ jsxDEV("div", { className: "flex items-start space-x-3 text-sm", children: [
-27 |    /* @__PURE__ */ jsxDEV("p", { className: "text-muted-foreground w-24 flex-shrink-0", children: new Date(item.timestamp).toLocaleString("en-IN") }, void 0, false, {
-    at TransformPluginContext._formatLog (file:///E:/sharif/assignment/FieldEn
+TicketManagement.jsx:70 
+ GET http://192.168.1.241:8021/api/tickets/68728e8… 400 (Bad Request)
+
+TicketManagement.jsx:75 Polling error: 
+AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+TicketManagement.jsx:70 
+ GET http://192.168.1.241:8021/api/tickets/68728e8… 400 (Bad Request)
+TicketManagement.jsx:75 Polling error: 
+AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+TicketManagement.jsx:70 
+ GET http://192.168.1.241:8021/api/tickets/68728e8… 400 (Bad Request)
+TicketManagement.jsx:75 Polling error: 
+AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+TicketManagement.jsx:70 
+ GET http://192.168.1.241:8021/api/tickets/68728e8… 400 (Bad Request)
+TicketManagement.jsx:75 Polling error: 
+AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+TicketManagement.jsx:70 
+ GET http://192.168.1.241:8021/api/tickets/68728e8… 400 (Bad Request)
+TicketManagement.jsx:75 Polling error: 
+AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+﻿
+

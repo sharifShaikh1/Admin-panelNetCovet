@@ -109,12 +109,7 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
         <DialogFooter className="pt-4 border-t border-border">
           <div className="flex w-full justify-between items-center">
             <div>
-              {canPay && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (
-                <Button onClick={handlePayout} disabled={isPaying}>
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  {isPaying ? 'Processing Payout...' : 'Pay with Stripe'}
-                </Button>
-              )}
+              
             </div>
             <div className="flex gap-3">
               {ticket.status === 'Open' && !ticket.assignedEngineer && ticket.accessRequests?.length === 0 && (userRole === 'Admin' || userRole === 'NetCovet Manager') && (

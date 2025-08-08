@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
+import { apiRequest } from '../lib/utils'; // Import apiRequest
 
-const PaymentForm = ({ ticket, onCancel }) => {
+const PaymentForm = ({ ticket, token, onCancel, onPaymentSuccess }) => { // Add token to props
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = useState(false);
@@ -16,20 +17,33 @@ const PaymentForm = ({ ticket, onCancel }) => {
 
         setLoading(true);
 
-        const { error } = await stripe.confirmPayment({
+        const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
-            confirmParams: {
-                return_url: `${window.location.origin}/admin/tickets/Closed`,
-            },
+            redirect: 'if_required',
         });
 
-        if (error.type === "card_error" || error.type === "validation_error") {
+        if (error) {
             toast.error("Payment failed", { description: error.message });
+            setLoading(false);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            try {
+                // Inform the backend that the payment was successful
+                await apiRequest(
+                    'put',
+                    `/tickets/${ticket._id}/payment-status`,
+                    { paymentStatus: 'Paid', paymentIntentId: paymentIntent.id },
+                    token
+                );
+                toast.success("Payment successful and status updated!");
+                onPaymentSuccess(); // This will trigger the polling and UI update
+            } catch (apiError) {
+                toast.error("Payment succeeded but failed to update status", { description: apiError.message });
+                setLoading(false);
+            }
         } else {
             toast.error("An unexpected error occurred.");
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (

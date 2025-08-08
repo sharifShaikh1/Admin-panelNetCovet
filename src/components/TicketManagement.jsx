@@ -56,6 +56,40 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
         setShowPaymentModal(true);
     };
 
+    const handlePaymentSuccess = useCallback(async () => {
+        if (!selectedTicket) return;
+
+        setShowPaymentModal(false);
+
+        const pollForStatus = async (retries = 5, delay = 2000) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const config = { headers: { Authorization: `Bearer ${token}` } };
+                    const { data } = await axios.get(`${API_URL}/tickets/ticket/${selectedTicket._id}`, config);
+                    if (data.paymentStatus === 'Paid') {
+                        // Update the specific ticket in the local state
+                        setTickets(prevTickets => 
+                            prevTickets.map(t => 
+                                t._id === selectedTicket._id ? { ...t, paymentStatus: 'Paid' } : t
+                            )
+                        );
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            return false;
+        };
+
+        await pollForStatus();
+
+        // No need to fetch all tickets again, but we can if we want to be safe
+        // fetchTickets(); 
+        setSelectedTicket(null);
+    }, [selectedTicket, token, fetchTickets]);
+
     const handlePaymentCancel = () => {
         setShowPaymentModal(false);
         setSelectedTicket(null);
@@ -110,6 +144,7 @@ const TicketManagement = ({ token, onViewDetails, onCreateTicket, onStatusChange
     <PaymentModal
         isOpen={showPaymentModal}
         onCancel={handlePaymentCancel}
+        onPaymentSuccess={handlePaymentSuccess}
         ticket={selectedTicket}
         token={token}
     />

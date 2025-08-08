@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 const stripePromise = loadStripe(process.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const PaymentModal = ({ isOpen, onCancel, ticket, token }) => {
+const PaymentModal = ({ isOpen, onCancel, ticket, token, onPaymentSuccess }) => {
     const [clientSecret, setClientSecret] = useState('');
 
     useEffect(() => {
@@ -26,6 +26,11 @@ const PaymentModal = ({ isOpen, onCancel, ticket, token }) => {
         }
     }, [isOpen, ticket, token, onCancel]);
 
+    const handlePaymentSuccess = () => {
+        onPaymentSuccess();
+        onCancel();
+    };
+
     const options = {
         clientSecret,
         appearance: {
@@ -41,7 +46,7 @@ const PaymentModal = ({ isOpen, onCancel, ticket, token }) => {
                 </DialogHeader>
                 {clientSecret && (
                     <Elements stripe={stripePromise} options={options}>
-                        <PaymentForm ticket={ticket} onCancel={onCancel} />
+                        <PaymentForm ticket={ticket} token={token} onCancel={onCancel} onPaymentSuccess={handlePaymentSuccess} />
                     </Elements>
                 )}
             </DialogContent>
