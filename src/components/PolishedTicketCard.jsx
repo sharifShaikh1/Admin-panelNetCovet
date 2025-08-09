@@ -30,6 +30,7 @@ const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange, onChat, onP
     const statusColors = {
         Open: "bg-blue-500",
         "In Progress": "bg-yellow-500",
+        "On Hold": "bg-orange-500",
         Closed: "bg-gray-500",
     };
 
@@ -91,6 +92,7 @@ const PolishedTicketCard = ({ ticket, onViewDetails, onStatusChange, onChat, onP
                             <DropdownMenuSeparator />
                             <DropdownMenuItem disabled={ticket.status === 'Open'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Open'))}>Mark as Open</DropdownMenuItem>
                             <DropdownMenuItem disabled={ticket.status === 'In Progress'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'In Progress'))}>Mark as In Progress</DropdownMenuItem>
+                            <DropdownMenuItem disabled={ticket.status === 'On Hold'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'On Hold'))}>Mark as On Hold</DropdownMenuItem>
                             <DropdownMenuItem disabled={ticket.status === 'Closed'} onClick={(e) => handleActionClick(e, () => onStatusChange(ticket._id, 'Closed'))} className="text-destructive focus:text-destructive">Mark as Closed</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

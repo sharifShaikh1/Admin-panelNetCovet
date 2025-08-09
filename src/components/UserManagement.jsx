@@ -4,6 +4,7 @@ import { apiRequest } from '../lib/utils';
 import UserTable from './UserTable';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const USER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const userCache = {};
@@ -12,6 +13,8 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const { status } = useParams();
+  const [idProofUrl, setIdProofUrl] = useState(null);
+  const [isIdModalOpen, setIsIdModalOpen] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     // Ensure status is valid before fetching
@@ -43,6 +46,11 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleViewId = (url) => {
+    setIdProofUrl(url);
+    setIsIdModalOpen(true);
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-foreground mb-6">User Management</h2>
@@ -66,11 +74,20 @@ const UserManagement = ({ token, onAction, onViewDetails, handleApiError }) => {
               view={status} 
               onAction={onAction} 
               onViewDetails={onViewDetails}
+              onViewId={handleViewId}
               token={token}
             />
           )}
         </CardContent>
       </Card>
+      <Dialog open={isIdModalOpen} onOpenChange={setIsIdModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ID Proof</DialogTitle>
+          </DialogHeader>
+          <img src={idProofUrl} alt="ID Proof" className="max-w-full h-auto" />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

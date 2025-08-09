@@ -82,6 +82,18 @@ const TicketDetailsModal = ({ ticket, open, setOpen, onAssignFromRequest, onManu
               )}
             </div>
 
+            {ticket.holdReason && (
+              <DetailSection title="Hold Reason">
+                <p className="text-base text-foreground leading-relaxed">{ticket.holdReason}</p>
+              </DetailSection>
+            )}
+
+            {ticket.closingRemarks && (
+              <DetailSection title="Closing Remarks">
+                <p className="text-base text-foreground leading-relaxed">{ticket.closingRemarks}</p>
+              </DetailSection>
+            )}
+
             {ticket.accessRequests?.length > 0 && (
               <DetailSection title="Access Requests">
                 <div className="space-y-3 mt-2">

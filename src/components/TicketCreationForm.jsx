@@ -21,6 +21,7 @@ const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
     workDescription: "",
     amount: "",
     expertiseRequired: [],
+    requiredEngineers: 1, // Default to 1
   });
 
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
@@ -48,7 +49,7 @@ const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const { companyName, siteAddress, workDescription, amount, expertiseRequired } = formData;
+    const { companyName, siteAddress, workDescription, amount, expertiseRequired, requiredEngineers } = formData;
 
     if (
       !companyName.trim() ||
@@ -56,9 +57,11 @@ const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
       !workDescription.trim() ||
       !amount ||
       !coordinates.latitude ||
-      expertiseRequired.length === 0
+      expertiseRequired.length === 0 ||
+      !requiredEngineers ||
+      requiredEngineers < 1
     ) {
-      toast.error("Please fill all fields and select a valid address.");
+      toast.error("Please fill all fields, select a valid address, and specify at least one required engineer.");
       setIsSubmitting(false);
       return;
     }
@@ -67,6 +70,7 @@ const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
       ...formData,
       amount: parseFloat(amount),
       coordinates,
+      requiredEngineers: parseInt(requiredEngineers),
     };
 
     if (userRole === 'Company Admin' && companyId) {
@@ -130,6 +134,19 @@ const TicketCreationForm = ({ onSubmit, onCancel, userRole, companyId }) => {
               value={formData.amount}
               onChange={handleChange}
               className="h-10 text-base"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="requiredEngineers" className="text-base">Required Engineers</Label>
+            <Input
+              id="requiredEngineers"
+              name="requiredEngineers"
+              type="number"
+              value={formData.requiredEngineers}
+              onChange={handleChange}
+              className="h-10 text-base"
+              min="1"
             />
           </div>
 

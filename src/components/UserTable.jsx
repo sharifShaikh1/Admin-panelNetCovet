@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from '../lib/utils';
 import { toast } from 'sonner';
 
-const UserTable = ({ users, view, onAction, onViewDetails, token }) => {
+const UserTable = ({ users, view, onAction, onViewDetails, onViewId, token }) => {
 
   const handleOnboard = async (userId) => {
     try {
@@ -32,6 +32,7 @@ const UserTable = ({ users, view, onAction, onViewDetails, token }) => {
               <TableHead>Stripe Onboarding</TableHead>
             )}
             <TableHead>Details</TableHead>
+            <TableHead>ID Proof</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,6 +80,15 @@ const UserTable = ({ users, view, onAction, onViewDetails, token }) => {
                   onClick={() => onViewDetails(user)}
                 >
                   View
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onViewId(user.documents.idProofPicture)}
+                >
+                  View ID
                 </Button>
               </TableCell>
             </TableRow>
